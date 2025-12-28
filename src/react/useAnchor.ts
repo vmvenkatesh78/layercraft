@@ -16,6 +16,8 @@ export interface UseAnchorOptions {
     closeOnOutsideClick?: boolean; //  Close when clicking outside
     hoverDelay?: number; // Delay before closing on hover (ms) - allows user to reach floating element
     autoFlip?: boolean; // Enable auto-flip when out of bounds (default: true)
+    closeOnEscape?: boolean; // Close when pressing Escape key (default: true)
+    fallbackPlacements?: Placement[]; // Additional placements to try if initial placement overflows viewport
 }
 
 export interface UseAnchorReturn {
@@ -44,6 +46,8 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         closeOnOutsideClick = true,
         hoverDelay = 100,
         autoFlip = true,
+        closeOnEscape = true,
+        fallbackPlacements = [],
     } = options;
 
     // State
@@ -56,15 +60,9 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
     const anchorRef = useRef<HTMLElement | null>(null);
     const floatingRef = useRef<HTMLElement | null>(null);
 
-    // Callback refs
-    const setAnchorRef = useCallback((node: HTMLElement | null) => {
-        anchorRef.current = node;
-    }, []);
+    const fallbackPlacementsKey = JSON.stringify(fallbackPlacements);
 
-    const setFloatingRef = useCallback((node: HTMLElement | null) => {
-        floatingRef.current = node;
-    }, []);
-    
+
     // Memoized position update function
     const updatePosition = useCallback(() => {
         if (!anchorRef.current || !floatingRef.current) return;
@@ -75,7 +73,12 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         const viewport = getViewport();
 
         const rawPosition = autoFlip
-            ? getPositionWithFlip(anchorRect, floatingRect, { placement, offset }, viewport)
+            ? getPositionWithFlip(
+                anchorRect,
+                floatingRect,
+                { placement, offset, fallbackPlacements },
+                viewport
+            )
             : getPosition(anchorRect, floatingRect, { placement, offset });
 
         setActualPlacement(rawPosition.placement);
@@ -90,7 +93,39 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
 
         setPosition(clampedPosition);
         setIsReady(true);
-    }, [placement, offset, autoFlip]);
+    }, [placement, offset, autoFlip, fallbackPlacementsKey]);
+
+    // Callback refs
+    const setAnchorRef = useCallback((node: HTMLElement | null) => {
+        anchorRef.current = node;
+    }, []);
+
+    const setFloatingRef = useCallback((node: HTMLElement | null) => {
+        floatingRef.current = node;
+        // When floating element mounts (including via Portal), recalculate position
+        if (node && isOpen) {
+            requestAnimationFrame(updatePosition);
+        }
+    }, [isOpen, updatePosition]);
+
+    // Handle Escape key to close
+    useEffect(() => {
+        if (!closeOnEscape || !isOpen) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                setIsOpen(false);
+            }
+        };
+
+        // Use capture phase to catch event early
+        window.addEventListener('keydown', handleKeyDown, true);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown, true);
+        };
+    }, [closeOnEscape, isOpen]);
 
 
     // Reset ready when closed
