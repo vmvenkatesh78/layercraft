@@ -139,6 +139,14 @@ export function getPositionWithFlip(
   return getPosition(anchorRect, floatingRect, config);
 }
 
+const OPPOSITE_SIDE_MAP: Record<string, string> = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left',
+};
+
+
 /**
  * Get the opposite placement for flipping
  * 
@@ -146,16 +154,9 @@ export function getPositionWithFlip(
  * @returns The opposite placement (e.g., 'top' → 'bottom', 'left-start' → 'right-start')
  */
 function getOppositePlacement(placement: Placement): Placement {
-  const opposites: Record<string, string> = {
-    top: 'bottom',
-    bottom: 'top',
-    left: 'right',
-    right: 'left',
-  };
 
   const [side, alignment] = placement.split('-');
-  const oppositeSide = opposites[side] || side;
-
+  const oppositeSide = OPPOSITE_SIDE_MAP[side] || side;
   return (alignment ? `${oppositeSide}-${alignment}` : oppositeSide) as Placement;
 }
 
@@ -182,4 +183,76 @@ function fitsInViewport(
     top + floatingHeight <= viewport.height &&
     left + floatingWidth <= viewport.width
   );
+}
+
+export interface ArrowPosition {
+  left?: number;
+  top?: number;
+  staticSide: 'top' | 'bottom' | 'left' | 'right';
+}
+
+
+const STATIC_SIDE_MAP: Record<string, 'top' | 'bottom' | 'left' | 'right'> = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left',
+};
+
+/**
+ * Calculate arrow position relative to the floating element.
+ * Arrow points toward the anchor element.
+ * 
+ * @param placement - The actual placement of the floating element
+ * @param anchorRect - Bounding rect of the anchor element
+ * @param floatingRect - Bounding rect of the floating element
+ * @param arrowSize - Size of the arrow in pixels
+ * @returns Arrow position styles and which side it should be on
+ */
+export function getArrowPosition(
+  placement: Placement,
+  anchorRect: DOMRect,
+  floatingRect: DOMRect,
+  arrowSize: number
+): ArrowPosition {
+  const [side] = placement.split('-');
+  
+  // The arrow sits on the opposite side of the placement
+  const staticSide = STATIC_SIDE_MAP[side];
+
+  // Calculate arrow position along the floating element
+  // Arrow should point to center of anchor
+  const isVertical = side === 'top' || side === 'bottom';
+  
+  if (isVertical) {
+    // Arrow moves horizontally
+    const anchorCenter = anchorRect.left + anchorRect.width / 2;
+    const floatingLeft = floatingRect.left;
+    const arrowLeft = anchorCenter - floatingLeft - arrowSize / 2;
+    
+    // Clamp arrow to stay within floating element bounds
+    const minLeft = arrowSize;
+    const maxLeft = floatingRect.width - arrowSize * 2;
+    const clampedLeft = Math.max(minLeft, Math.min(maxLeft, arrowLeft));
+    
+    return {
+      left: clampedLeft,
+      staticSide,
+    };
+  } else {
+    // Arrow moves vertically
+    const anchorCenter = anchorRect.top + anchorRect.height / 2;
+    const floatingTop = floatingRect.top;
+    const arrowTop = anchorCenter - floatingTop - arrowSize / 2;
+    
+    // Clamp arrow to stay within floating element bounds
+    const minTop = arrowSize;
+    const maxTop = floatingRect.height - arrowSize * 2;
+    const clampedTop = Math.max(minTop, Math.min(maxTop, arrowTop));
+    
+    return {
+      top: clampedTop,
+      staticSide,
+    };
+  }
 }

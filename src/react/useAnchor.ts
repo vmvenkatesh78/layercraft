@@ -6,8 +6,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
-import { getPositionWithFlip, clampToViewport, getViewport, getPosition } from '../core';
-import type { Placement } from '../core';
+import { getPositionWithFlip, clampToViewport, getViewport, getPosition, getArrowPosition } from '../core';
+import type { Placement, ArrowPosition } from '../core';
 
 export interface UseAnchorOptions {
     placement?: Placement; // Where to place the floating element
@@ -18,13 +18,16 @@ export interface UseAnchorOptions {
     autoFlip?: boolean; // Enable auto-flip when out of bounds (default: true)
     closeOnEscape?: boolean; // Close when pressing Escape key (default: true)
     fallbackPlacements?: Placement[]; // Additional placements to try if initial placement overflows viewport
+    arrow?: { size: number } | boolean;  // Arrow configuration (true = default 8px)
 }
 
 export interface UseAnchorReturn {
-    refCallbacks: { // Refs to attach to anchor and floating elements
+    refCallbacks: { // Refs to attach to anchor, floating and arrow elements
         anchor: (node: HTMLElement | null) => void;
         floating: (node: HTMLElement | null) => void
+        arrow: (node: HTMLElement | null) => void;
     };
+    arrowStyles: React.CSSProperties; // Styles to apply to arrow element
     floatingStyles: React.CSSProperties; // Styles to apply to floating element
     isOpen: boolean; // Whether floating element is visible
     setIsOpen: (open: boolean) => void; // Manually control visibility
@@ -48,6 +51,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         autoFlip = true,
         closeOnEscape = true,
         fallbackPlacements = [],
+        arrow = false,
     } = options;
 
     // State
@@ -55,13 +59,35 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const [actualPlacement, setActualPlacement] = useState<Placement>(placement);
     const [isReady, setIsReady] = useState(false);
+    const [arrowPosition, setArrowPosition] = useState<ArrowPosition | null>(null);
 
     // Store elements in refs
     const anchorRef = useRef<HTMLElement | null>(null);
     const floatingRef = useRef<HTMLElement | null>(null);
+    const arrowRef = useRef<HTMLElement | null>(null);
+
 
     const fallbackPlacementsKey = JSON.stringify(fallbackPlacements);
 
+    const getArrowSize = (): number => {
+        if (typeof arrow === 'boolean') {
+            return arrow ? 8 : 0;
+        }
+        return arrow?.size ?? 0;
+    };
+
+    const arrowSize = getArrowSize();
+
+    const getArrowRotation = (placement: Placement): string => {
+        const side = placement.split('-')[0];
+        switch (side) {
+            case 'top': return 'rotate(0deg)';
+            case 'bottom': return 'rotate(180deg)';
+            case 'left': return 'rotate(-90deg)';
+            case 'right': return 'rotate(90deg)';
+            default: return 'rotate(0deg)';
+        }
+    };
 
     // Memoized position update function
     const updatePosition = useCallback(() => {
@@ -69,7 +95,6 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
 
         const anchorRect = anchorRef.current.getBoundingClientRect();
         const floatingRect = floatingRef.current.getBoundingClientRect();
-
         const viewport = getViewport();
 
         const rawPosition = autoFlip
@@ -92,8 +117,20 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         );
 
         setPosition(clampedPosition);
+
+        // Calculate arrow position if enabled
+        if (arrowSize > 0) {
+            const arrowPos = getArrowPosition(
+                rawPosition.placement,
+                anchorRect,
+                floatingRef.current.getBoundingClientRect(),
+                arrowSize
+            );
+            setArrowPosition(arrowPos);
+        }
+
         setIsReady(true);
-    }, [placement, offset, autoFlip, fallbackPlacementsKey]);
+    }, [placement, offset, autoFlip, fallbackPlacementsKey, arrowSize]);
 
     // Callback refs
     const setAnchorRef = useCallback((node: HTMLElement | null) => {
@@ -107,6 +144,10 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
             requestAnimationFrame(updatePosition);
         }
     }, [isOpen, updatePosition]);
+
+    const setArrowRef = useCallback((node: HTMLElement | null) => {
+        arrowRef.current = node;
+    }, []);
 
     // Handle Escape key to close
     useEffect(() => {
@@ -267,12 +308,22 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         refCallbacks: {
             anchor: setAnchorRef,
             floating: setFloatingRef,
+            arrow: setArrowRef,
         },
         floatingStyles: {
             position: 'fixed',
             top: position.top,
             left: position.left,
-            visibility: isReady ? 'visible' : 'hidden',  // Hide until ready
+            visibility: isReady ? 'visible' : 'hidden',
+        },
+        arrowStyles: arrowPosition ? {
+            position: 'absolute' as const,
+            left: arrowPosition.left,
+            top: arrowPosition.top,
+            [arrowPosition.staticSide]: -arrowSize,
+            transform: getArrowRotation(actualPlacement),
+        } : {
+            visibility: 'hidden' as const,
         },
         isOpen,
         setIsOpen,
