@@ -45,6 +45,7 @@
     "build:demo": "tsc -b && vite build",
     "lint": "eslint src/",
     "test": "vitest",
+    "test:ci": "vitest run --config vitest.config.ci.ts",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
