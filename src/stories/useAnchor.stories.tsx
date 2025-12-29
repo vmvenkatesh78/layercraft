@@ -40,6 +40,7 @@ function AnchorDemo({
 
       {isOpen && (
         <div
+          // eslint-disable-next-line react-hooks/refs
           ref={refCallbacks.floating}
           style={{
             ...floatingStyles,

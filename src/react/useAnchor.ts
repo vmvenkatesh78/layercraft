@@ -92,7 +92,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
     };
 
     // Memoized position update function
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+ 
     const updatePosition = useCallback(() => {
         if (!anchorRef.current || !floatingRef.current) return;
 
@@ -133,6 +133,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         }
 
         setIsReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [placement, offset, autoFlip, fallbackPlacementsKey, arrowSize]);
 
     // Callback refs
@@ -174,16 +175,14 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
 
     // Reset ready when closed
     useEffect(() => {
-        if (!isOpen) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (!isOpen) { 
             setIsReady(false);
         }
     }, [isOpen]);
 
     // Initial position calculation (sync, before paint)
     useLayoutEffect(() => {
-        if (!isOpen) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (!isOpen) return; 
         updatePosition();
     }, [isOpen, updatePosition]);
 
