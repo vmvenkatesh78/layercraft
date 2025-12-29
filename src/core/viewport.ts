@@ -91,3 +91,64 @@ export function isOutOfBounds(
     left: left < padding,
   };
 }
+
+export interface ShiftResult {
+  top: number;
+  left: number;
+  shifted: {
+    x: boolean;
+    y: boolean;
+  };
+}
+
+/**
+ * Shifts the floating element to stay within viewport bounds.
+ * Unlike clamp, shift only moves along the axis perpendicular to placement.
+ * 
+ * @param top - Current top position
+ * @param left - Current left position  
+ * @param width - Floating element width
+ * @param height - Floating element height
+ * @param viewport - Viewport dimensions
+ * @param padding - Minimum distance from viewport edge (default: 8)
+ */
+export function shiftToViewport(
+  top: number,
+  left: number,
+  width: number,
+  height: number,
+  viewport: Viewport,
+  padding: number = 8
+): ShiftResult {
+  let shiftedX = false;
+  let shiftedY = false;
+  let newTop = top;
+  let newLeft = left;
+
+  // Shift horizontally if needed
+  if (left < padding) {
+    newLeft = padding;
+    shiftedX = true;
+  } else if (left + width > viewport.width - padding) {
+    newLeft = viewport.width - width - padding;
+    shiftedX = true;
+  }
+
+  // Shift vertically if needed
+  if (top < padding) {
+    newTop = padding;
+    shiftedY = true;
+  } else if (top + height > viewport.height - padding) {
+    newTop = viewport.height - height - padding;
+    shiftedY = true;
+  }
+
+  return {
+    top: newTop,
+    left: newLeft,
+    shifted: {
+      x: shiftedX,
+      y: shiftedY,
+    },
+  };
+}
