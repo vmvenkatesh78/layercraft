@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
-import { getPositionWithFlip, clampToViewport, getViewport, getPosition, getArrowPosition } from '../core';
+import { getPositionWithFlip, clampToViewport, getViewport, getPosition, getArrowPosition, shiftToViewport } from '../core';
 import type { Placement, ArrowPosition } from '../core';
 
 export interface UseAnchorOptions {
@@ -20,6 +20,9 @@ export interface UseAnchorOptions {
     fallbackPlacements?: Placement[]; // Additional placements to try if initial placement overflows viewport
     arrow?: { size: number } | boolean;  // Arrow configuration (true = default 8px)
     zIndex?: number; // z-index for floating element (default: 9999)
+    shift?: boolean; // Enable shift to keep within viewport (default: true)
+    shiftPadding?: number; // Padding from viewport edge (default: 8)
+
 }
 
 export interface UseAnchorReturn {
@@ -54,6 +57,8 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         fallbackPlacements = [],
         arrow = false,
         zIndex = 9999,
+        shift = true,
+        shiftPadding = 8,
     } = options;
 
     // State
@@ -92,7 +97,6 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
     };
 
     // Memoized position update function
- 
     const updatePosition = useCallback(() => {
         if (!anchorRef.current || !floatingRef.current) return;
 
@@ -111,15 +115,25 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
 
         setActualPlacement(rawPosition.placement);
 
-        const clampedPosition = clampToViewport(
-            rawPosition.top,
-            rawPosition.left,
-            floatingRect.width,
-            floatingRect.height,
-            viewport
-        );
+        // Apply shift if enabled, otherwise clamp
+        const finalPosition = shift
+            ? shiftToViewport(
+                rawPosition.top,
+                rawPosition.left,
+                floatingRect.width,
+                floatingRect.height,
+                viewport,
+                shiftPadding
+            )
+            : clampToViewport(
+                rawPosition.top,
+                rawPosition.left,
+                floatingRect.width,
+                floatingRect.height,
+                viewport
+            );
 
-        setPosition(clampedPosition);
+        setPosition({ top: finalPosition.top, left: finalPosition.left });
 
         // Calculate arrow position if enabled
         if (arrowSize > 0) {
@@ -134,7 +148,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
 
         setIsReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [placement, offset, autoFlip, fallbackPlacementsKey, arrowSize]);
+    }, [placement, offset, autoFlip, fallbackPlacementsKey, arrowSize, shift, shiftPadding]);
 
     // Callback refs
     const setAnchorRef = useCallback((node: HTMLElement | null) => {
