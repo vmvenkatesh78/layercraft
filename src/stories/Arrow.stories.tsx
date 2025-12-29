@@ -40,6 +40,7 @@ function ArrowDemo({
 
       {isOpen && (
         <div
+          // eslint-disable-next-line react-hooks/refs
           ref={refCallbacks.floating}
           style={{
             ...floatingStyles,
@@ -56,6 +57,7 @@ function ArrowDemo({
           
           {/* Arrow element */}
           <div
+            // eslint-disable-next-line react-hooks/refs
             ref={refCallbacks.arrow}
             style={{
               ...arrowStyles,

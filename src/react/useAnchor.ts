@@ -19,6 +19,7 @@ export interface UseAnchorOptions {
     closeOnEscape?: boolean; // Close when pressing Escape key (default: true)
     fallbackPlacements?: Placement[]; // Additional placements to try if initial placement overflows viewport
     arrow?: { size: number } | boolean;  // Arrow configuration (true = default 8px)
+    zIndex?: number; // z-index for floating element (default: 9999)
 }
 
 export interface UseAnchorReturn {
@@ -52,6 +53,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
         closeOnEscape = true,
         fallbackPlacements = [],
         arrow = false,
+        zIndex = 9999,
     } = options;
 
     // State
@@ -90,6 +92,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
     };
 
     // Memoized position update function
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const updatePosition = useCallback(() => {
         if (!anchorRef.current || !floatingRef.current) return;
 
@@ -315,6 +318,7 @@ export function useAnchor(options: UseAnchorOptions = {}): UseAnchorReturn {
             top: position.top,
             left: position.left,
             visibility: isReady ? 'visible' : 'hidden',
+            zIndex,
         },
         arrowStyles: arrowPosition ? {
             position: 'absolute' as const,

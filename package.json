@@ -1,45 +1,85 @@
 {
   "name": "layercraft",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0-beta.1",
+  "description": "A lightweight positioning library for floating elements like tooltips, popovers, and dropdowns",
+  "author": "Venkatesh M",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vmvenkatesh78/layercraft"
+  },
+  "homepage": "https://layercraft-smoky.vercel.app",
+  "keywords": [
+    "popover",
+    "tooltip",
+    "dropdown",
+    "positioning",
+    "floating-ui",
+    "popper",
+    "react",
+    "anchor"
+  ],
   "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsup",
+    "build:demo": "tsc -b && vite build",
     "lint": "eslint src/",
     "test": "vitest",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
-  "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.3",
     "@eslint/js": "^9.39.1",
+    "@storybook/addon-a11y": "^10.1.10",
+    "@storybook/addon-docs": "^10.1.10",
+    "@storybook/addon-onboarding": "^10.1.10",
+    "@storybook/addon-vitest": "^10.1.10",
+    "@storybook/react-vite": "^10.1.10",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/browser-playwright": "^4.0.16",
+    "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-storybook": "^10.1.10",
     "globals": "^16.5.0",
+    "playwright": "^1.57.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "storybook": "^10.1.10",
+    "tsup": "^8.5.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^4.0.16",
-    "storybook": "^10.1.10",
-    "@storybook/react-vite": "^10.1.10",
-    "@chromatic-com/storybook": "^4.1.3",
-    "@storybook/addon-vitest": "^10.1.10",
-    "@storybook/addon-a11y": "^10.1.10",
-    "@storybook/addon-docs": "^10.1.10",
-    "@storybook/addon-onboarding": "^10.1.10",
-    "eslint-plugin-storybook": "^10.1.10",
-    "playwright": "^1.57.0",
-    "@vitest/browser-playwright": "^4.0.16",
-    "@vitest/coverage-v8": "^4.0.16"
+    "vitest": "^4.0.16"
   }
 }
