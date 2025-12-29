@@ -9,6 +9,8 @@ export default defineConfig({
       'src/**/__tests__/**/*.tsx',
     ],
     exclude: ['src/stories/**', '**/*.stories.tsx'],
-    environment: 'node',
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
   },
 });
