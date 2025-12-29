@@ -37,6 +37,7 @@ function ClickPopover({
       </button>
       {isOpen && (
         <div
+          // eslint-disable-next-line react-hooks/refs
           ref={refCallbacks.floating}
           data-testid="floating"
           style={floatingStyles}
@@ -63,6 +64,7 @@ function HoverPopover() {
       </button>
       {isOpen && (
         <div
+          // eslint-disable-next-line react-hooks/refs
           ref={refCallbacks.floating}
           data-testid="floating"
           style={floatingStyles}
@@ -88,6 +90,7 @@ function ReadyStatePopover() {
       </button>
       {isOpen && (
         <div
+          // eslint-disable-next-line react-hooks/refs
           ref={refCallbacks.floating}
           data-testid="floating"
           style={{
