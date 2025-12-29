@@ -25,6 +25,7 @@ Layercraft takes a different approach: **explicit math, predictable behavior, no
 
 - 🎯 **12 placement options** — top, bottom, left, right with start/center/end alignment
 - 🔄 **Auto-flip** — automatically flips when there's not enough space
+- 🔀 **Shift** — keeps element within viewport without changing placement
 - 📍 **Fallback placements** — custom flip order for complex layouts
 - 🚀 **Portal support** — escape `overflow: hidden` containers
 - ➡️ **Arrow positioning** — built-in arrow/caret support
@@ -233,6 +234,35 @@ const { actualPlacement } = useAnchor({
 console.log(`Using: ${actualPlacement}`);
 ```
 
+### Shift (Prevent Edge Clipping)
+
+Shift keeps the floating element within viewport bounds without changing placement:
+```tsx
+const { refCallbacks, floatingStyles, isOpen } = useAnchor({
+  placement: 'right',
+  shift: true,        // Enabled by default
+  shiftPadding: 8,    // Padding from viewport edge
+});
+```
+
+```
+Without shift:              With shift:
+┌─────────────────┐        ┌─────────────────┐
+│            ┌────────     │         ┌──────┐│
+│   Anchor   │Tooltip│     │ Anchor  │Tooltip│
+│            └────────     │         └──────┘│
+└─────────────────┘        └─────────────────┘
+    (clips at edge)           (shifted to fit)
+```
+
+To disable shift:
+```tsx
+const { ... } = useAnchor({
+  placement: 'top',
+  shift: false,  // Disable shifting
+});
+```
+
 ### Controlled Mode
 
 Manage open state yourself:
@@ -268,22 +298,16 @@ function ControlledPopover() {
 
 Use the core functions without React:
 ```ts
-import { getPosition, getPositionWithFlip } from 'layercraft';
+import { getPosition, getPositionWithFlip, shiftToViewport, getViewport } from 'layercraft';
 
 const anchor = document.querySelector('#anchor');
 const floating = document.querySelector('#floating');
 
 const anchorRect = anchor.getBoundingClientRect();
 const floatingRect = floating.getBoundingClientRect();
+const viewport = getViewport();
 
-const viewport = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-  scrollX: window.scrollX,
-  scrollY: window.scrollY,
-};
-
-// With auto-flip
+// Step 1: Calculate position with auto-flip
 const result = getPositionWithFlip(
   anchorRect,
   floatingRect,
@@ -291,9 +315,20 @@ const result = getPositionWithFlip(
   viewport
 );
 
+// Step 2: Apply shift to keep within viewport
+const shifted = shiftToViewport(
+  result.top,
+  result.left,
+  floatingRect.width,
+  floatingRect.height,
+  viewport,
+  8 // padding
+);
+
+// Step 3: Apply styles
 floating.style.position = 'fixed';
-floating.style.top = `${result.top}px`;
-floating.style.left = `${result.left}px`;
+floating.style.top = `${shifted.top}px`;
+floating.style.left = `${shifted.left}px`;
 ```
 
 ## API Reference
@@ -311,6 +346,8 @@ floating.style.left = `${result.left}px`;
 | `closeOnEscape` | `boolean` | `true` | Close when pressing Escape |
 | `autoFlip` | `boolean` | `true` | Flip to opposite side if no space |
 | `fallbackPlacements` | `Placement[]` | `undefined` | Custom fallback placement order |
+| `shift` | `boolean` | `true` | Keep floating element within viewport by shifting |
+| `shiftPadding` | `number` | `8` | Padding from viewport edge when shifting (px) |
 | `arrow` | `boolean \| { size: number }` | `false` | Enable arrow positioning |
 | `zIndex` | `number` | `9999` | z-index for floating element |
 
@@ -352,9 +389,11 @@ For vanilla JS or custom implementations:
 import { 
   getPosition,           // Basic positioning
   getPositionWithFlip,   // Positioning with auto-flip
+  shiftToViewport,       // Keep within viewport by shifting
   getArrowPosition,      // Arrow positioning
-  clampToViewport,       // Keep within viewport
+  clampToViewport,       // Clamp to viewport bounds
   isOutOfBounds,         // Check if position overflows
+  getViewport,           // Get viewport dimensions
 } from 'layercraft';
 ```
 
