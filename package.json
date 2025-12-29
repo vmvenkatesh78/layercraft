@@ -1,6 +1,6 @@
 {
   "name": "layercraft",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "A lightweight positioning library for floating elements like tooltips, popovers, and dropdowns",
   "author": "Venkatesh M",
   "license": "MIT",

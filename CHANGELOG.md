@@ -1,3 +1,15 @@
+# [1.0.0-beta.2](https://github.com/vmvenkatesh78/layercraft/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-12-29)
+
+
+### Bug Fixes
+
+*  Add eslint-disable for ref callback false positives ([51a752f](https://github.com/vmvenkatesh78/layercraft/commit/51a752fbee8d1cb5ba4b9f402962da98274ac914))
+
+
+### Features
+
+* add shift middleware to prevent edge clipping ([873fb0b](https://github.com/vmvenkatesh78/layercraft/commit/873fb0be6c6f62fefb77f07f8212bbd2e8ff2a2d))
+
 # 1.0.0-beta.1 (2025-12-29)
 
 
