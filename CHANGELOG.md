@@ -1,3 +1,10 @@
+# [1.0.0-beta.3](https://github.com/vmvenkatesh78/layercraft/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-12-30)
+
+
+### Bug Fixes
+
+* export shiftToViewport and viewport utilities from package ([555ba95](https://github.com/vmvenkatesh78/layercraft/commit/555ba9520cbdda973c68e344d3f8ffff6e7c046a))
+
 # [1.0.0-beta.2](https://github.com/vmvenkatesh78/layercraft/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-12-29)
 
 
