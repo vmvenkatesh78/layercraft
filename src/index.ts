@@ -3,8 +3,24 @@
  */
 
 // Core
-export { getPosition, getPositionWithFlip, getArrowPosition } from './core';
-export type { Placement, PositionConfig, PositionResult, ArrowPosition } from './core';
+export { 
+  getPosition, 
+  getPositionWithFlip, 
+  getArrowPosition,
+  getViewport,
+  clampToViewport,
+  shiftToViewport,
+} from './core';
+
+export type { 
+  Placement, 
+  PositionConfig, 
+  PositionResult, 
+  ArrowPosition,
+  Viewport,
+  BoundsCheck,
+  ShiftResult,
+} from './core';
 
 // React
 export { useAnchor } from './react/useAnchor';
