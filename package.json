@@ -78,7 +78,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "eslint-plugin-storybook": "^10.1.10",
-    "globals": "^16.5.0",
+    "globals": "^17.0.0",
     "jsdom": "^27.4.0",
     "playwright": "^1.57.0",
     "react": "^19.2.0",
